@@ -2,13 +2,24 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Users, Image } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   const stats = [
     { label: 'Total Sales', value: '234.5K ETH', icon: TrendingUp },
     { label: 'Active Users', value: '180K+', icon: Users },
     { label: 'NFTs Minted', value: '2.1M', icon: Image }
   ];
+
+  const handleExploreNFTs = () => {
+    navigate('/explore');
+  };
+
+  const handleCreateCollection = () => {
+    navigate('/create-collection');
+  };
 
   return (
     <section className="relative py-20 overflow-hidden">
@@ -37,6 +48,7 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button 
               size="lg" 
+              onClick={handleExploreNFTs}
               className="bg-cosmic-gradient hover:opacity-90 text-white font-semibold px-8 py-4 text-lg rounded-xl"
             >
               Explore NFTs
@@ -44,6 +56,7 @@ const HeroSection = () => {
             <Button 
               size="lg" 
               variant="outline" 
+              onClick={handleCreateCollection}
               className="border-2 border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-xl backdrop-blur-sm"
             >
               Create Collection

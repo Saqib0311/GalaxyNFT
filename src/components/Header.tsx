@@ -2,11 +2,16 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, User, Wallet, Bell } from 'lucide-react';
+import { Search, User, Wallet } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import NotificationDropdown from './NotificationDropdown';
 
 const Header = () => {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const connectWallet = async () => {
     try {
@@ -29,12 +34,30 @@ const Header = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/explore?search=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  const isActivePage = (path: string) => {
+    return location.pathname === path;
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 backdrop-blur-xl bg-galaxy-deep/80">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div 
+            className="flex items-center space-x-2 cursor-pointer"
+            onClick={() => navigate('/')}
+          >
             <div className="w-10 h-10 rounded-full bg-cosmic-gradient flex items-center justify-center">
               <span className="text-white font-bold text-lg">G</span>
             </div>
@@ -43,36 +66,64 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#explore" className="text-white/80 hover:text-white transition-colors">
+            <button 
+              onClick={() => handleNavigation('/explore')}
+              className={`transition-colors ${
+                isActivePage('/explore') 
+                  ? 'text-white' 
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
               Explore
-            </a>
-            <a href="#create" className="text-white/80 hover:text-white transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavigation('/create')}
+              className={`transition-colors ${
+                isActivePage('/create') 
+                  ? 'text-white' 
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
               Create
-            </a>
-            <a href="#collections" className="text-white/80 hover:text-white transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavigation('/collections')}
+              className={`transition-colors ${
+                isActivePage('/collections') 
+                  ? 'text-white' 
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
               Collections
-            </a>
-            <a href="#community" className="text-white/80 hover:text-white transition-colors">
+            </button>
+            <button 
+              onClick={() => handleNavigation('/community')}
+              className={`transition-colors ${
+                isActivePage('/community') 
+                  ? 'text-white' 
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
               Community
-            </a>
+            </button>
           </nav>
 
           {/* Search Bar */}
           <div className="hidden lg:flex items-center space-x-4 flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+            <form onSubmit={handleSearch} className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4" />
               <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search NFTs, collections, or creators..."
                 className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/50 focus:border-galaxy-purple"
               />
-            </div>
+            </form>
           </div>
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="text-white/80 hover:text-white">
-              <Bell className="w-5 h-5" />
-            </Button>
+            <NotificationDropdown />
 
             {isWalletConnected ? (
               <div className="flex items-center space-x-3">
