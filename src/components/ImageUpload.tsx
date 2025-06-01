@@ -16,6 +16,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageUpload,
   onImageClear
 }) => {
+  const handleButtonClick = () => {
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   return (
     <div>
       <label className="block text-white font-semibold mb-2">
@@ -27,15 +34,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <img 
               src={imagePreview} 
               alt="Preview" 
-              className="w-full h-64 object-cover rounded-lg"
+              className="w-full h-64 object-cover rounded-lg border border-white/20"
             />
-            <div className="text-white/60 text-sm mb-2">
+            <div className="text-white/80 text-sm mb-2 bg-black/20 rounded p-2">
               {imageFile?.name} ({((imageFile?.size || 0) / 1024 / 1024).toFixed(2)} MB)
             </div>
             <Button 
               onClick={onImageClear}
               variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-white/20 text-white hover:bg-white/10 bg-transparent"
             >
               Change Image
             </Button>
@@ -54,15 +61,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 className="hidden"
                 id="image-upload"
               />
-              <label htmlFor="image-upload">
-                <Button 
-                  type="button"
-                  className="bg-cosmic-gradient hover:opacity-90 cursor-pointer"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Choose File
-                </Button>
-              </label>
+              <Button 
+                type="button"
+                onClick={handleButtonClick}
+                className="bg-cosmic-gradient hover:opacity-90"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Choose File
+              </Button>
             </div>
           </div>
         )}
