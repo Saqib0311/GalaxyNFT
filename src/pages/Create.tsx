@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 
 const Create = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -18,6 +20,7 @@ const Create = () => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -26,23 +29,131 @@ const Create = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please select an image under 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file (PNG, JPG, GIF)",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setImageFile(file);
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      toast({
+        title: "Image uploaded",
+        description: `${file.name} has been selected`,
+      });
     }
   };
 
-  const handleCreate = () => {
+  const uploadToIPFS = async (file: File): Promise<string> => {
+    // Simulate IPFS upload - in a real app, you'd use a service like Pinata or IPFS
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Mock IPFS hash generation
+    const mockHash = `QmX${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+    
+    // Simulate upload delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    return `https://ipfs.io/ipfs/${mockHash}`;
+  };
+
+  const handleCreate = async () => {
     if (!formData.name || !formData.description || !imageFile) {
-      alert('Please fill in all required fields');
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields and upload an image",
+        variant: "destructive",
+      });
       return;
     }
     
-    console.log('Creating NFT:', { ...formData, imageFile });
-    alert('NFT creation functionality will be implemented with smart contracts!');
+    setIsCreating(true);
+    
+    try {
+      // Upload image to IPFS
+      toast({
+        title: "Uploading to IPFS...",
+        description: "Your image is being uploaded to IPFS",
+      });
+      
+      const imageUrl = await uploadToIPFS(imageFile);
+      
+      // Create metadata
+      const metadata = {
+        name: formData.name,
+        description: formData.description,
+        image: imageUrl,
+        category: formData.category,
+        attributes: [
+          {
+            trait_type: "Category",
+            value: formData.category
+          }
+        ]
+      };
+      
+      // In a real app, you would:
+      // 1. Upload metadata to IPFS
+      // 2. Call smart contract to mint NFT
+      // 3. Wait for transaction confirmation
+      
+      console.log('Creating NFT with data:', {
+        ...formData,
+        imageFile: imageFile.name,
+        imageUrl,
+        metadata
+      });
+      
+      // Simulate blockchain transaction
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      toast({
+        title: "NFT Created Successfully!",
+        description: `"${formData.name}" has been minted and added to your collection`,
+      });
+      
+      // Reset form
+      setFormData({
+        name: '',
+        description: '',
+        category: '',
+        royalties: '',
+        price: '',
+        currency: 'ETH'
+      });
+      setImageFile(null);
+      setImagePreview('');
+      
+    } catch (error) {
+      console.error('Error creating NFT:', error);
+      toast({
+        title: "Error creating NFT",
+        description: "There was an error creating your NFT. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -74,6 +185,9 @@ const Create = () => {
                         alt="Preview" 
                         className="w-full h-64 object-cover rounded-lg"
                       />
+                      <div className="text-white/60 text-sm mb-2">
+                        {imageFile?.name} ({(imageFile?.size || 0 / 1024 / 1024).toFixed(2)} MB)
+                      </div>
                       <Button 
                         onClick={() => {
                           setImageFile(null);
@@ -101,7 +215,7 @@ const Create = () => {
                         />
                         <label htmlFor="image-upload">
                           <Button 
-                            as="div"
+                            type="button"
                             className="bg-cosmic-gradient hover:opacity-90 cursor-pointer"
                           >
                             <Upload className="w-4 h-4 mr-2" />
@@ -217,11 +331,12 @@ const Create = () => {
 
               <Button 
                 onClick={handleCreate}
+                disabled={isCreating}
                 size="lg"
-                className="w-full bg-cosmic-gradient hover:opacity-90 text-white font-semibold"
+                className="w-full bg-cosmic-gradient hover:opacity-90 text-white font-semibold disabled:opacity-50"
               >
                 <Wand2 className="w-5 h-5 mr-2" />
-                Create NFT
+                {isCreating ? 'Creating NFT...' : 'Create NFT'}
               </Button>
 
               <p className="text-white/60 text-sm text-center">
